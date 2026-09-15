@@ -104,3 +104,39 @@ cv2.imwrite(
     all_lines_image
 )
 
+#right now the red lines are really bad, we should filter
+
+filtered_image = image.copy() #copying the original image to draw filtered lines on it
+
+if lines is not None:
+    for line in lines:
+        x1, y1, x2, y2 = line
+
+        dx = x2 - x1 #change in x
+        dy = y2 - y1 #change in y
+
+        print("dx:", dx, "dy:", dy) #printing the change in x and y for debugging
+        #note this doesn't filter anything but just calculates how each detected line moves
+
+        angle = np.degrees(np.arctan2(dy, dx)) #calculating the angle of the line in degrees
+
+        #this is because we want to remove near-horizontal lines, which are not crop rows, and we can do that by filtering based on the angle of the line
+
+        if abs(angle) < 20 or abs(angle) > 160: #if the line is near-horizontal
+            continue #skip this line
+
+        cv2.line(
+            filtered_image, #this is the image to modify
+            (x1, y1), #starting point
+            (x2, y2), #ending point
+            (0, 0, 255), #BGR color
+            3) #drawing the line on the image, in a green color with thickness 3 pixels
+
+        
+cv2.imwrite(
+    "results/crop_row_candidates.jpg", #path to save the image with filtered lines
+    filtered_image)
+
+
+
+
