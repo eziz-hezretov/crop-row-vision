@@ -81,11 +81,11 @@ def process_image(image_path):
 
         theta=np.pi / 180, #angle resolution of one degree, in radians
 
-        threshold=40, #minimum number of votes (intersections in Hough space) the line needs to accumulate
+        threshold=50, #minimum number of votes (intersections in Hough space) the line needs to accumulate
 
-        minLineLength=50, #minimum number of pixels making up a line
+        minLineLength=68, #minimum number of pixels making up a line
 
-        maxLineGap=30 #maximum gap in pixels between connectable line segments
+        maxLineGap=25 #maximum gap in pixels between connectable line segments
 
         #the idea is that it searches the edge image for groups of edge pixels that line up approximately straight
         #HoughLinesP is the probabilistic Hough line transform, giving actual enpoints
@@ -129,8 +129,13 @@ def process_image(image_path):
 
             #this is because we want to remove near-horizontal lines, which are not crop rows, and we can do that by filtering based on the angle of the line
 
-            if abs(angle) < 20 or abs(angle) > 160: #if the line is near-horizontal
-                continue #skip this line
+            if angle > 90:
+                angle -= 180 #this is to make the angle range from -90 to 90 degrees, instead of 0 to 180 degrees
+            elif angle <= -90:
+                angle += 180 #same as above, but for negative angles
+
+            if abs(angle) < 35:
+                continue #if the angle is less than 35 degrees, we skip this line because it's too horizontal
 
             cv2.line(
                 filtered_image, #this is the image to modify
