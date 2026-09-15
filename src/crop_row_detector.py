@@ -52,8 +52,55 @@ clean_mask = cv2.morphologyEx(
 #dilation = expanding the white areas in the mask, which fills in small black holes
 #during dilation, the small white dots that were removed during erosion do not come back, so the mask is cleaner
 
-cv2.imwrite("results/clean_mask.jpg", clean_mask) #saves the cleaned mask to the specified path for reference
+cv2.imwrite("results/clean_mask.jpg", clean_mask) #saving the cleaned mask
+
+edges = cv2.Canny(clean_mask, 50, 150) #using Canny edge detection to find edges in our cleaned mask
+
+#so now the thresholds control which intensity changes count strongly enough as edges, we're creating outlines/boundaries
+
+#canny highlights boundaries in cleaned mask so next algorithm can search for line structures
+
+cv2.imwrite("results/edges.jpg", edges) #saving the edges image
+
+#note, we intentionally didn't run Hough on the original image, because an original photo contains too much information
+#information like color, texture, or other features that aren't relevant to the task
+#so, we simplified the photo to green vegetation, the cleaned it, then found the boundaries, and Hough now has a simpler image to inspect
+
+lines = cv2.HoughLinesP(
+
+    edges,
+
+    rho=1, #search line positions using approximately one-pixel resolution
+
+    theta=np.pi / 180, #angle resolution of one degree, in radians
+
+    threshold=40, #minimum number of votes (intersections in Hough space) the line needs to accumulate
+
+    minLineLength=50, #minimum number of pixels making up a line
+
+    maxLineGap=30 #maximum gap in pixels between connectable line segments
+
+    #the idea is that it searches the edge image for groups of edge pixels that line up approximately straight
+    #HoughLinesP is the probabilistic Hough line transform, giving actual enpoints
+)
 
 
+all_lines_image = image.copy() #copying the original image to draw all detected lines on it
 
+#we dont want to impact the original image so we'll use .copy()
+
+if lines is not None: #did Hough actually even find a line? Sometimes it doesn't and returns None
+    for line in lines:
+        x1, y1, x2, y2 = line #unpacking coords
+        cv2.line(
+            all_lines_image, #this is the image to modify
+            (x1, y1), #starting point
+            (x2, y2), #ending point
+            (0, 0, 255), #BGR color
+            2) #drawing the line on the image, in a red color with thickness 2 pixels
+
+cv2.imwrite(
+    "results/all_detected_lines.jpg", #path to save the image with all detected lines
+    all_lines_image
+)
 
