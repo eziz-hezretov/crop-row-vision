@@ -26,3 +26,34 @@ vegetation_mask = cv2.inRange(
 
 cv2.imwrite("results/vegetation_mask.jpg", vegetation_mask) #saves the vegetation mask to the specified path for reference
 
+#at this point in time, the mask contains lots of small white dots and black holes, so we will clean it
+
+kernel = np.ones((5, 5), np.uint8) #creates a 5x5 matrix of ones to be used as a kernel for morphological operations
+
+#during morphological operations, the kernal is moved across the image, and it defines the neighbourhood size used. 
+
+#morphological opening
+
+opened_mask = cv2.morphologyEx(
+    vegetation_mask,
+    cv2.MORPH_OPEN,
+    kernel
+)
+
+clean_mask = cv2.morphologyEx(
+    opened_mask,
+    cv2.MORPH_CLOSE,
+    kernel
+)
+
+#these two morphological operations work as so:
+#opening = erosion + dilation
+#erosian = shrinking the white areas in the mask, which removes small white dots
+#dilation = expanding the white areas in the mask, which fills in small black holes
+#during dilation, the small white dots that were removed during erosion do not come back, so the mask is cleaner
+
+cv2.imwrite("results/clean_mask.jpg", clean_mask) #saves the cleaned mask to the specified path for reference
+
+
+
+
