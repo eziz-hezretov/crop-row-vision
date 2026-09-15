@@ -19,7 +19,10 @@ def process_image(image_path):
 
     print("Image shape:", image.shape) #prints the dimensions of the image (height, width, channels)
 
-    cv2.imwrite("results/original.jpg", image) #saves the original image to the specified path for reference
+    cv2.imwrite(
+        f"results/{name}_original.jpg",
+        image
+    ) #saves the original image to the specified path for reference
 
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV) #converts from BGR color space to HSV color space
 
@@ -31,7 +34,10 @@ def process_image(image_path):
         lower_green,
         upper_green) #for every pixel in the HSV image, is its color between my lower and upper limits?
 
-    cv2.imwrite("results/vegetation_mask.jpg", vegetation_mask) #saves the vegetation mask to the specified path for reference
+    cv2.imwrite(
+        f"results/{name}_vegetation_mask.jpg",
+        vegetation_mask
+    ) #saves the vegetation mask to the specified path for reference
 
     #at this point in time, the mask contains lots of small white dots and black holes, so we will clean it
 
@@ -59,7 +65,10 @@ def process_image(image_path):
     #closing = expanding the white areas in the mask, which fills in small black holes
     #during closing, the small white dots that were removed during erosion do not come back, so the mask is cleaner
 
-    cv2.imwrite("results/clean_mask.jpg", clean_mask) #saving the cleaned mask
+    cv2.imwrite(
+        f"results/{name}_clean_mask.jpg",
+        clean_mask
+    ) #saving the cleaned mask
 
     edges = cv2.Canny(clean_mask, 50, 150) #using Canny edge detection to find edges in our cleaned mask
 
@@ -67,7 +76,10 @@ def process_image(image_path):
 
     #canny highlights boundaries in cleaned mask so next algorithm can search for line structures
 
-    cv2.imwrite("results/edges.jpg", edges) #saving the edges image
+    cv2.imwrite(
+        f"results/{name}_edges.jpg",
+        edges
+    ) #saving the edges image
 
     #note, we intentionally didn't run Hough on the original image, because an original photo contains too much information
     #information like color, texture, or other features that aren't relevant to the task
@@ -107,7 +119,7 @@ def process_image(image_path):
                 2) #drawing the line on the image, in a red color with thickness 2 pixels
 
     cv2.imwrite(
-        "results/all_detected_lines.jpg", #path to save the image with all detected lines
+        f"results/{name}_all_detected_lines.jpg",
         all_lines_image
     )
 
@@ -140,7 +152,7 @@ def process_image(image_path):
                 angle += 180 #same as above, but for negative angles
 
             if abs(angle) < 25:
-                continue #if the angle is less than 20 degrees, we skip this line because it's too horizontal
+                continue #if the angle is less than 25 degrees, we skip this line because it's too horizontal
 
             top_y = min(y1, y2) #the top y coordinate of the line
             bottom_y = max(y1, y2) #the bottom y coordinate of the line
@@ -148,10 +160,10 @@ def process_image(image_path):
             vertical_span = bottom_y - top_y #the vertical span of the line
 
             if bottom_y < image_height * 0.45:
-                continue #if the bottom of the line is above 55% of the image height, we skip this line because it's too high up
+                continue #if the bottom of the line is above 45% of the image height, we skip this line because it's too high up
 
             if vertical_span < image_height * 0.08:
-                continue #if the vertical span of the line is less than 12% of the image height, we skip this line because it's too short
+                continue #if the vertical span of the line is less than 8% of the image height, we skip this line because it's too short
 
             candidate_lines.append(
                 (x1, y1, x2, y2, angle)
